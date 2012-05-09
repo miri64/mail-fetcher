@@ -2,20 +2,14 @@
 
 import sys, imaplib, getpass
 
-if __name__ == '__main__':
-    host = '<host>'
-    port = '<port>'
-    username = '<username>'
-    password = '<password>'
-    mailbox = '<mailbox>'
-
+def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
     try:
         server = imaplib.IMAP4_SSL(host, port)
         server.login(username, password)
         result, data = server.select(mailbox)
         try:
             if result != 'OK':
-                raise imaplib.IMAP4.error("Error finding mailbox '%s'." % mailbox)
+                raise Exception("Error finding mailbox '%s'." % mailbox)
             result, data = server.uid("search", None, "ALL")
             uids = data[0].split()
             raw_mails = []
@@ -25,7 +19,16 @@ if __name__ == '__main__':
         finally:
             server.close()
     except imaplib.IMAP4.error as e:
-        print(e, file=sys.stderr)
+        raise Exception(e)
     finally:
         server.logout()
+    return raw_mails
 
+if __name__ == '__main__':
+    host = '<host>'
+    port = 993
+    username = '<username>'
+    password = '<password>'
+    mailbox = '<mailbox>'
+    
+    raw_mails = fetch_raw_emails(username, password, host, port, mailbox)
