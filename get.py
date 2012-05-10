@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys, imaplib, getpass
+import email, email.feedparser, email.header, email.utils
 
 def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
     try:
@@ -13,7 +14,7 @@ def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
             result, data = server.uid("search", None, "ALL")
             uids = data[0].split()
             raw_mails = []
-            for uid in [uids[0]]:
+            for uid in uids:
                 result, data = server.uid("fetch", uid, "(RFC822)")
                 raw_mails.append(data[0][1])
         finally:
@@ -24,6 +25,11 @@ def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
         server.logout()
     return raw_mails
 
+def parse_raw_mail(raw_mail):
+    parser = email.feedparser.BytesFeedParser()
+    parser.feed(raw_mail) 
+    return parser.close()
+
 if __name__ == '__main__':
     host = '<host>'
     port = 993
@@ -32,3 +38,5 @@ if __name__ == '__main__':
     mailbox = '<mailbox>'
     
     raw_mails = fetch_raw_emails(username, password, host, port, mailbox)
+    for mail in raw_mails:
+        mail = parse_raw_mail(mail)
