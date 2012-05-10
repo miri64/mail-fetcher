@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import sys, imaplib, getpass
+import os, sys, imaplib, getpass, time 
 import email, email.feedparser, email.header, email.utils
 
 def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
@@ -40,3 +40,9 @@ if __name__ == '__main__':
     raw_mails = fetch_raw_emails(username, password, host, port, mailbox)
     for mail in raw_mails:
         mail = parse_raw_mail(mail)
+        subject = mail['from']
+        parts = email.header.decode_header(subject)
+        subject = str(email.header.make_header(parts))
+        time = email.utils.mktime_tz(email.utils.parsedate_tz(mail['date']))
+        dirname = "%d %s" % (time, subject)
+        os.mkdir(dirname)
