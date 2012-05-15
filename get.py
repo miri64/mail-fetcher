@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, imaplib, getpass, time 
+import os, shutil, sys, imaplib, getpass, time 
 import email, email.feedparser, email.header, email.utils
 
 def fetch_raw_emails(username, password, host, port=993, mailbox='INBOX'):
@@ -30,19 +30,26 @@ def parse_raw_mail(raw_mail):
     parser.feed(raw_mail) 
     return parser.close()
 
+def create_maildir(mail):
+    subject = mail['from']
+    parts = email.header.decode_header(subject)
+    subject = str(email.header.make_header(parts))
+    time = email.utils.mktime_tz(email.utils.parsedate_tz(mail['date']))
+    dirname = os.path.join(output_dir, "%d %s" % (time, subject))
+    if os.path.exists(dirname):
+        shutil.rmtree(dirname)
+    os.mkdir(dirname)
+    return dirname
+
 if __name__ == '__main__':
     host = '<host>'
     port = 993
     username = '<username>'
     password = '<password>'
     mailbox = '<mailbox>'
+    output_dir = '.'
     
     raw_mails = fetch_raw_emails(username, password, host, port, mailbox)
-    for mail in raw_mails:
-        mail = parse_raw_mail(mail)
-        subject = mail['from']
-        parts = email.header.decode_header(subject)
-        subject = str(email.header.make_header(parts))
-        time = email.utils.mktime_tz(email.utils.parsedate_tz(mail['date']))
-        dirname = "%d %s" % (time, subject)
-        os.mkdir(dirname)
+    for raw_mail in raw_mails:
+        mail = parse_raw_mail(raw_mail)
+        dirname = create_maildir(mail)
