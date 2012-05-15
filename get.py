@@ -30,7 +30,7 @@ def parse_raw_mail(raw_mail):
     parser.feed(raw_mail) 
     return parser.close()
 
-def create_maildir(mail):
+def create_maildir(output_dir, mail):
     subject = mail['from']
     parts = email.header.decode_header(subject)
     subject = str(email.header.make_header(parts))
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     raw_mails = fetch_raw_emails(username, password, host, port, mailbox)
     for raw_mail in raw_mails:
         mail = parse_raw_mail(raw_mail)
-        dirname = create_maildir(mail)
+        dirname = create_maildir(output_dir,mail)
         mail_file = open(os.path.join(dirname,"mail.eml"), 'wb')
         mail_file.write(raw_mail)
         mail_file.close()
