@@ -53,3 +53,12 @@ if __name__ == '__main__':
     for raw_mail in raw_mails:
         mail = parse_raw_mail(raw_mail)
         dirname = create_maildir(mail)
+        mail_file = open(os.path.join(dirname,"mail.eml"), 'wb')
+        mail_file.write(raw_mail)
+        mail_file.close()
+        for file in mail.walk():
+            if file.get_filename():
+                mail_file = open(os.path.join(dirname,file.get_filename()), 'w')
+                mail_file.write(file.get_payload())
+                mail_file.close()
+
